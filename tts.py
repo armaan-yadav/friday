@@ -15,6 +15,7 @@ sd.play() is stopped and speak() returns False, letting the STT pipeline
 pick up from the audio already sitting in its queue.
 
 Dependencies: kokoro, sounddevice, numpy
+Configuration from .env file via config.py
 """
 
 import threading
@@ -22,22 +23,24 @@ import numpy as np
 import sounddevice as sd
 from kokoro import KPipeline
 
+# Load configuration from .env
+from config import (
+    TTS_KOKORO_LANG,
+    TTS_KOKORO_VOICE,
+    TTS_KOKORO_SAMPLE_RATE,
+    TTS_BARGE_IN_THRESHOLD,
+    TTS_BARGE_IN_CONFIRM_BLOCKS,
+)
+
 # ---------------------------------------------------------------------------
-# Configuration
+# Aliases for backward compatibility
 # ---------------------------------------------------------------------------
 
-KOKORO_LANG        = "a"          # 'a' = American English
-KOKORO_VOICE       = "af_heart"   # warm female voice
-KOKORO_SAMPLE_RATE = 24_000       # Kokoro always outputs 24 kHz
-
-# RMS energy on the mic that counts as "user is speaking".
-# Raise this if speaker bleed-through triggers false interrupts;
-# lower it if you have to shout to be heard.
-BARGE_IN_THRESHOLD = 0.02
-
-# How many consecutive loud blocks are required before we interrupt.
-# 1 = hair-trigger; 3 ~= 30 ms of speech needed (fewer false positives).
-BARGE_IN_CONFIRM_BLOCKS = 3
+KOKORO_LANG = TTS_KOKORO_LANG
+KOKORO_VOICE = TTS_KOKORO_VOICE
+KOKORO_SAMPLE_RATE = TTS_KOKORO_SAMPLE_RATE
+BARGE_IN_THRESHOLD = TTS_BARGE_IN_THRESHOLD
+BARGE_IN_CONFIRM_BLOCKS = TTS_BARGE_IN_CONFIRM_BLOCKS
 
 # ---------------------------------------------------------------------------
 # One-time pipeline initialisation

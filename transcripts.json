@@ -1,8 +1,27 @@
 {
-  "transcripts": [],
+  "transcripts": [
+    {
+      "user": "What is the weather today?",
+      "ai": "Right now in Ahmedabad, you can expect hazy sunshine. The temperature is 105 degrees Fahrenheit, but it actually feels warmer at about 108 degrees, according to AccuWeather. Another source from the India Meteorological Department notes the current weather as 37 Celsius.",
+      "time": "16:17:41",
+      "timestamp": 1776509261.652735
+    },
+    {
+      "user": "Tell me the latest news",
+      "ai": "The big headlines right now involve Prime Minister Modi, who is scheduled to address the nation at 8:30 PM today, according to NDTV and the Times of India. For political news, Indian Express reports on a legislative defeat for the BJP government and a potential ban on communal content in Jammu. Additionally, Google News mentioned that a Modi government constitutional amendment bill fell for the first time in twelve years.",
+      "time": "16:26:17",
+      "timestamp": 1776509777.6477077
+    },
+    {
+      "user": "What's the news on Iran-Israel war?",
+      "ai": "The news is very focused on continued tension between Iran and Israel, with reports covering US-Israel strikes, Iranian retaliation, nuclear threats, and potential oil market shocks, according to Reuters. Al Jazeera has reported that Tehran claims the Strait of Hormuz was shut down again over what they call US piracy. Additionally, there are updates about displaced people returning home in Lebanon following a ceasefire, according to Al Jazeera. You can also follow expert analysis and ground reports on this topic from BBC News.",
+      "time": "16:40:49",
+      "timestamp": 1776510649.7339146
+    }
+  ],
   "processing": false,
   "thinking": false,
   "partial_ai": "",
-  "muted": false,
-  "updated": 1776334837.5959706
+  "muted": true,
+  "updated": 1776510649.7339146
 }

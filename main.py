@@ -6,6 +6,7 @@ Changes from v1:
   - Streaming LLM: sentences are spoken as they're generated (low latency)
   - HTTP server (port 5000) for the UI to control mic mute + serve files
   - index.html served via this process so mic control works
+  - Configuration from .env file via config.py
 
 Run:
     python main.py
@@ -18,16 +19,20 @@ import threading
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
+# Load configuration from .env
+from config import SERVER_PORT, SERVER_OUTPUT_JSON
+
 # Local modules
 import transcribe
 import llm
 import tts
 
 # ---------------------------------------------------------------------------
-# Transcript persistence
+# Aliases for backward compatibility
 # ---------------------------------------------------------------------------
 
-OUTPUT_JSON: str = "transcripts.json"
+OUTPUT_JSON: str = SERVER_OUTPUT_JSON
+
 _transcripts: list[dict] = []
 _lock = threading.Lock()
 
@@ -40,7 +45,7 @@ def _write_json(*, is_processing: bool = False, is_thinking: bool = False,
         "thinking": is_thinking,
         "partial_ai": partial_ai,
         "muted": transcribe.is_muted(),
-        "updated": time.time(),
+        "updated": time.time(), 
     }
     with open(OUTPUT_JSON, "w", encoding="utf-8") as fh:
         json.dump(payload, fh, ensure_ascii=False, indent=2)
@@ -124,6 +129,25 @@ class Handler(BaseHTTPRequestHandler):
             _write_json()
             body = json.dumps({"muted": transcribe.is_muted()}).encode()
             self._respond(200, "application/json", body)
+        elif self.path == "/send-prompt":
+            # Handle predefined prompt submission
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(content_length)
+            try:
+                data = json.loads(body.decode('utf-8'))
+                prompt_text = data.get("prompt", "").strip()
+                if prompt_text:
+                    print(f"[Main] 🔘 Prompt from UI: {prompt_text}")
+                    # Run on background thread to avoid blocking HTTP server
+                    import threading
+                    thread = threading.Thread(target=_on_transcript, args=(prompt_text,), daemon=True)
+                    thread.start()
+                    body = json.dumps({"success": True}).encode()
+                    self._respond(200, "application/json", body)
+                else:
+                    self._respond(400, "application/json", b'{"error": "empty prompt"}')
+            except json.JSONDecodeError:
+                self._respond(400, "application/json", b'{"error": "invalid json"}')
         else:
             self._respond(404, "text/plain", b"Not found")
 
@@ -145,7 +169,9 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
 
-def _start_server(port: int = 5000):
+def _start_server(port: int = None):
+    if port is None:
+        port = SERVER_PORT
     server = HTTPServer(("0.0.0.0", port), Handler)
     print(f"[Server] UI available at http://localhost:{port}")
     server.serve_forever()
@@ -158,7 +184,7 @@ def _start_server(port: int = 5000):
 def main() -> None:
     print("=" * 60)
     print("  Friday Voice Assistant")
-    print("  STT (Whisper)  →  LLM (Gemma / LM Studio)  →  TTS (Kokoro)")
+    print("  STT (Whisper)  -->  LLM (Gemma / LM Studio)  -->  TTS (Kokoro)")
     print("=" * 60)
 
     # Clear mute flag on fresh start

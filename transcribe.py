@@ -7,6 +7,7 @@ UPDATED FEATURES:
   - Auto-sleep after inactivity
   - Mute flag support
   - Voice activity detection (RMS-based)
+  - Configuration from .env file via config.py
 """
 
 import os
@@ -19,44 +20,42 @@ import numpy as np
 import sounddevice as sd
 from faster_whisper import WhisperModel
 
-# ---------------------------------------------------------------------------
-# Configuration
-# ---------------------------------------------------------------------------
-
-MODEL_SIZE: str = "large-v3"
-LANGUAGE: str = "hi"
-TASK: str = "translate"
-SAMPLE_RATE: int = 16_000
-WHISPER_DEVICE: str = "cuda"
-COMPUTE_TYPE: str = "float16"
-
-# ---------------------------------------------------------------------------
-# Wake-word configuration
-# ---------------------------------------------------------------------------
-
-WAKE_WORDS: list[str] = ["hey friday"]
-WAKE_WORD_TIMEOUT: float = 8.0
-
-# ---------------------------------------------------------------------------
-# Conversation mode
-# ---------------------------------------------------------------------------
-
-CONVERSATION_TIMEOUT: float = 12.0  # seconds before going back to sleep
+# Load configuration from .env
+from config import (
+    STT_MODEL_SIZE,
+    STT_LANGUAGE,
+    STT_TASK,
+    STT_SAMPLE_RATE,
+    STT_WHISPER_DEVICE,
+    STT_COMPUTE_TYPE,
+    STT_WAKE_WORDS,
+    STT_WAKE_WORD_TIMEOUT,
+    STT_CONVERSATION_TIMEOUT,
+    STT_SILENCE_THRESHOLD,
+    STT_SILENCE_DURATION,
+    STT_MIN_SPEECH_DURATION,
+    STT_BLOCK_SIZE,
+    SERVER_MUTE_FLAG_PATH,
+)
 
 # ---------------------------------------------------------------------------
-# Mute flag
+# Aliases for backward compatibility (references old config names)
 # ---------------------------------------------------------------------------
 
-MUTE_FLAG_PATH: str = "muted.flag"
-
-# ---------------------------------------------------------------------------
-# Voice Activity Detection
-# ---------------------------------------------------------------------------
-
-SILENCE_THRESHOLD: float = 0.01
-SILENCE_DURATION: float = 1.5
-MIN_SPEECH_DURATION: float = 0.5
-BLOCK_SIZE: int = int(0.1 * SAMPLE_RATE)
+MODEL_SIZE = STT_MODEL_SIZE
+LANGUAGE = STT_LANGUAGE
+TASK = STT_TASK
+SAMPLE_RATE = STT_SAMPLE_RATE
+WHISPER_DEVICE = STT_WHISPER_DEVICE
+COMPUTE_TYPE = STT_COMPUTE_TYPE
+WAKE_WORDS = STT_WAKE_WORDS
+WAKE_WORD_TIMEOUT = STT_WAKE_WORD_TIMEOUT
+CONVERSATION_TIMEOUT = STT_CONVERSATION_TIMEOUT
+SILENCE_THRESHOLD = STT_SILENCE_THRESHOLD
+SILENCE_DURATION = STT_SILENCE_DURATION
+MIN_SPEECH_DURATION = STT_MIN_SPEECH_DURATION
+BLOCK_SIZE = STT_BLOCK_SIZE
+MUTE_FLAG_PATH = SERVER_MUTE_FLAG_PATH
 
 # ---------------------------------------------------------------------------
 # Module state
