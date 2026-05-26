@@ -4,7 +4,7 @@
 
 **Friday** is a real-time voice assistant that streams speech-to-text, passes queries to a local LLM, and synthesizes responses with natural barge-in interruption. It runs as a Python service with an HTTP-served web UI for mute control.
 
-**Core Architecture**: `transcribe.py` (STT) → `main.py` (orchestrator) → `llm.py` (streaming chat) → `tts.py` (speech synthesis with interrupt detection) → `index.html` (web UI)
+**Core Architecture** (Python package `friday/`): `transcribe.py` (mic + wake-word) → `stt.py` (whisper or sarvam) → `pipeline.py` (orchestrator) → `llm.py` (streaming chat) → `tts.py` (synth + barge-in) → `static/index.html` (web UI built from `frontend/`).
 
 ### Tech Stack
 
@@ -167,7 +167,7 @@ cp .env.example .env
 nano .env
 
 # Run normally — config.py loads from .env
-python main.py
+uv run friday
 ```
 
 ## Testing & Debugging
@@ -190,7 +190,7 @@ python main.py
 ## Entry Point
 
 ```bash
-python main.py
+uv run friday
 # Opens http://localhost:5000
 # Logs all pipeline stages: [STT], [LLM], [TTS], [Main], [Server]
 ```

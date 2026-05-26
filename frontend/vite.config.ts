@@ -10,9 +10,11 @@ export default defineConfig({
       '/toggle-mute':      'http://localhost:5000',
       '/mute-status':      'http://localhost:5000',
       '/send-prompt':      'http://localhost:5000',
+      '/events':           { target: 'http://localhost:5000', changeOrigin: true, ws: false },
     },
   },
   build: {
-    outDir: '..',
+    outDir: '../static',
+    emptyOutDir: true,
   },
 })

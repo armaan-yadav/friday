@@ -8,11 +8,12 @@ Exposes:
 Configuration from .env file via config.py
 """
 
+import logging
 import re
+
 import requests
 
-# Load configuration from .env
-from config import (
+from .config import (
     SEARCH_SEARXNG_URL,
     SEARCH_JINA_URL,
     SEARCH_NUM_RESULTS,
@@ -21,6 +22,8 @@ from config import (
     SEARCH_TIMEOUT,
     SEARCH_JINA_TIMEOUT,
 )
+
+log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Aliases for backward compatibility
@@ -136,32 +139,31 @@ def get_search_context(query: str) -> str:
 def _search(query: str) -> list[dict]:
     """Query SearXNG JSON API and return up to NUM_RESULTS results."""
     try:
-        print(f"[Search] Querying SearXNG for: {query}")
+        log.info("Querying SearXNG: %s", query)
         resp = requests.get(
             SEARXNG_URL,
             params={"q": query, "format": "json"},
             timeout=SEARCH_TIMEOUT,
         )
         if resp.status_code == 403:
-            print("[Search] ⚠ SearXNG returned 403 — JSON format may not be enabled.")
-            print("         Edit settings.yml and add 'json' under search.formats, then restart Docker.")
+            log.warning("SearXNG 403 — enable 'json' under search.formats in settings.yml")
             return []
         resp.raise_for_status()
         results = resp.json().get("results", [])[:NUM_RESULTS]
-        print(f"[Search] Got {len(results)} results.")
+        log.info("Got %d results", len(results))
         return results
     except requests.exceptions.ConnectionError:
-        print("[Search] ⚠ Could not connect to SearXNG at", SEARXNG_URL)
+        log.warning("Could not connect to SearXNG at %s", SEARXNG_URL)
         return []
-    except Exception as e:
-        print(f"[Search] Error: {e}")
+    except Exception as exc:
+        log.error("SearXNG error: %s", exc)
         return []
 
 
 def _fetch_page(url: str) -> str:
     """Fetch a URL via Jina Reader and return truncated plain text."""
     try:
-        print(f"[Search] Fetching full page via Jina: {url[:60]}...")
+        log.info("Fetching via Jina: %s", url[:60])
         resp = requests.get(
             JINA_URL + url,
             headers={"Accept": "text/plain"},
@@ -171,6 +173,6 @@ def _fetch_page(url: str) -> str:
         if len(text) > MAX_PAGE_CHARS:
             text = text[:MAX_PAGE_CHARS] + "... [truncated]"
         return text
-    except Exception as e:
-        print(f"[Search] Jina fetch failed for {url[:60]}: {e}")
+    except Exception as exc:
+        log.warning("Jina fetch failed for %s: %s", url[:60], exc)
         return ""

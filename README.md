@@ -1,8 +1,8 @@
-"# Friday Voice Assistant
+# Friday Voice Assistant
 
 A real-time voice assistant that streams speech-to-text, passes queries to a local LLM, and synthesizes responses with natural barge-in interruption. Runs as a Python service with an HTTP-served web UI for mute control.
 
-**Core Architecture**: `transcribe.py` (STT) → `main.py` (orchestrator) → `llm.py` (streaming chat) → `tts.py` (speech synthesis with interrupt detection) → `index.html` (web UI)
+**Core Architecture**: `friday/transcribe.py` (mic + wake-word) → `friday/stt.py` (whisper or sarvam) → `friday/pipeline.py` (orchestrator) → `friday/llm.py` (streaming chat) → `friday/tts.py` (speech synthesis with interrupt detection) → `static/index.html` (web UI built from `frontend/`)
 
 ## Tech Stack
 
@@ -37,7 +37,7 @@ A real-time voice assistant that streams speech-to-text, passes queries to a loc
 
 4. **Build/Run the UI**:
    ```bash
-   cd ui
+   cd frontend
    npm install
    npm run build  # Production build
    # OR
@@ -46,7 +46,7 @@ A real-time voice assistant that streams speech-to-text, passes queries to a loc
 
 5. **Start the main server**:
    ```bash
-   uv run main.py
+   uv run friday
    ```
 
 6. **Open in browser**:
@@ -182,36 +182,39 @@ curl -X POST http://localhost:5000/send-prompt \
 ```
 User Audio
     ↓
-Whisper STT (transcribe.py)
+STT (friday/transcribe.py + friday/stt.py)
     ↓ [Wake word detected: "Hey Friday"]
     ↓
 Speech Activity Detection (VAD)
     ↓
 User Query Transcription
     ↓
-LLM Processing (llm.py)
+LLM Processing (friday/llm.py)
     ├→ Web Search (SearXNG + Jina Reader) [optional]
     ├→ Streaming from LM Studio
     └→ Sentence-by-sentence output
     ↓
-Text-to-Speech (tts.py)
+Text-to-Speech (friday/tts.py)
     ├→ Kokoro synthesis
     ├→ Microphone monitoring (barge-in detection)
     └→ Audio playback
     ↓
-UI Update (transcripts.json)
+UI Update (data/transcripts.json)
     ↓
 Web Browser (React UI)
 ```
 
 ### Key Components
 
-- **`transcribe.py`**: Handles speech-to-text with wake word detection and VAD
-- **`llm.py`**: Manages LLM communication with streaming support and web search
-- **`tts.py`**: Synthesizes audio responses with barge-in interrupt detection
-- **`main.py`**: Orchestrates the pipeline and serves the HTTP API
-- **`search.py`**: Integrates SearXNG and Jina Reader for web context
-- **`ui/`**: React frontend for mute control and chat visualization
+- **`friday/transcribe.py`**: Mic capture + wake-word state machine + VAD
+- **`friday/stt.py`**: STT provider abstraction (`STT_PROVIDER=whisper` or `sarvam`)
+- **`friday/llm.py`**: LM Studio streaming client with optional web search
+- **`friday/tts.py`**: Kokoro synthesis with barge-in interrupt detection
+- **`friday/pipeline.py`**: Orchestrator (`on_transcript` callback)
+- **`friday/server.py`**: HTTP server (serves `static/`, `data/transcripts.json`, JSON API)
+- **`friday/__main__.py`**: Entry point — `uv run friday`
+- **`friday/search.py`**: SearXNG + Jina Reader web context
+- **`frontend/`**: Vite + React source. Builds to `static/`.
 
 ## Features
 
@@ -247,29 +250,16 @@ Check `LLM_STUDIO_URL` in `.env` matches your LM Studio server address.
 ### UI Development
 
 ```bash
-cd ui
+cd frontend
 npm run dev
 # Opens http://localhost:5173 with hot reload
-```
-
-### Testing Endpoints
-
-```bash
-# Test LLM streaming with search
-uv run test_llm_with_search.py
-
-# Test LLM streaming without search
-uv run test_llm_streaming.py
-
-# Test /send-prompt endpoint
-uv run test_endpoint.py
 ```
 
 ### Debugging
 
 View logs while running:
 ```bash
-uv run main.py 2>&1 | grep -E "\[LLM\]|\[STT\]|\[TTS\]|\[Main\]"
+uv run friday 2>&1 | grep -E "\[LLM\]|\[STT\]|\[TTS\]|\[Main\]"
 ```
 
 ## Performance Tips
@@ -286,4 +276,4 @@ MIT
 ## Contributing
 
 See `.github/copilot-instructions.md` for development guidelines.
-" 
+

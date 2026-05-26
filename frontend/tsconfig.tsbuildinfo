@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/main.tsx","./src/types.ts","./src/components/ChatFeed.tsx","./src/components/ChatInput.tsx","./src/components/Footer.tsx","./src/components/Header.tsx","./src/components/MessageGroup.tsx","./src/components/StatusRows.tsx","./src/components/WaveformStrip.tsx","./src/hooks/useMicVisualizer.ts","./src/hooks/usePolling.ts"],"version":"6.0.3"}

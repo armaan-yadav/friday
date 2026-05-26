@@ -3,7 +3,7 @@ import { usePolling } from './hooks/usePolling'
 import Header        from './components/Header'
 import WaveformStrip from './components/WaveformStrip'
 import ChatFeed      from './components/ChatFeed'
-import PromptButtons from './components/PromptButtons'
+import ChatInput     from './components/ChatInput'
 import Footer        from './components/Footer'
 
 export default function App() {
@@ -38,7 +38,7 @@ export default function App() {
         thinking={thinking}
         partialAi={partialAi}
       />
-      <PromptButtons />
+      <ChatInput />
       <Footer count={displayList.length} onExport={exportChat} onClear={clearChat} />
     </div>
   )
